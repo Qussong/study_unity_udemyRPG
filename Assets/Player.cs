@@ -1,21 +1,47 @@
+using System;
+using Unity.VisualScripting;
+using UnityEditor.Tilemaps;
 using UnityEngine;
 
 public class Player : MonoBehaviour
 {
+    private Animator anim;
     private Rigidbody2D rb;
-    [SerializeField] private float moveSpeed = 3.5f;
-    [SerializeField] private float jumpForce = 8f;
+
+    [Header("Movement details")]
+    [SerializeField] private float moveSpeed;// = 3.5f;
+    [SerializeField] private float jumpForce;// = 8f;
     private float xInput;
+    private bool facingRight = true;
+
+    [Header("Collision details")]
+    [SerializeField] private float groundCheckDistance;
+    [SerializeField] private bool isGrounded;
+    private LayerMask whatIsGround;
+
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
+        anim = GetComponentInChildren<Animator>();
     }
 
     void Update()
     {
+        HandleCollision();
         HandleInput();
         HandleMovement();
+        HandleAnimations();
+        HandleFlip();
+    }
+
+    private void HandleAnimations()
+    {
+        // x축으로 이동중이면 isMoving 은 true
+        bool isMoving = rb.linearVelocity.x != 0;
+
+        // 함수 원형 : public void SetBool(string name, bool value)
+        anim.SetBool("isMoving", isMoving);
     }
 
     private void HandleInput()
@@ -33,6 +59,36 @@ public class Player : MonoBehaviour
 
     private void Jump()
     {
-        rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
+        if(isGrounded)
+            rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
     }
+
+    private void HandleCollision()
+    {
+        isGrounded = Physics2D.Raycast(transform.position, Vector2.down, groundCheckDistance, whatIsGround);
+    }
+
+    private void HandleFlip()
+    {
+        // 우측 이동중 (velocity.x > 0) + 캐릭터 왼쪽 바라보는 중
+        if (rb.linearVelocity.x > 0 && facingRight == false)
+            Flip();
+        // 좌측 이동중 (velocity.x < 0) + 캐릭터 오른쪽 바라보는 중
+        else if (rb.linearVelocity.x < 0 && facingRight == true)
+            Flip();
+    }
+
+    //[ContextMenu("Flip")]
+    private void Flip()
+    {
+        transform.Rotate(0, 180, 0);
+        facingRight = !facingRight;
+    }
+
+    private void OnDrawGizmos()
+    {
+        // 함수 원형 : public static void DrawLine(Vector3 from, Vector3 to)
+        Gizmos.DrawLine(transform.position, transform.position + new Vector3(0, -groundCheckDistance));
+    }
+
 }
