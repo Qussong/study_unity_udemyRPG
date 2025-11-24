@@ -1,6 +1,3 @@
-using System;
-using Unity.VisualScripting;
-using UnityEditor.Tilemaps;
 using UnityEngine;
 
 public class Player : MonoBehaviour
@@ -16,8 +13,8 @@ public class Player : MonoBehaviour
 
     [Header("Collision details")]
     [SerializeField] private float groundCheckDistance;
-    [SerializeField] private bool isGrounded;
-    private LayerMask whatIsGround;
+    [SerializeField] private LayerMask whatIsGround;
+    private bool isGrounded;
 
 
     private void Awake()
@@ -37,11 +34,10 @@ public class Player : MonoBehaviour
 
     private void HandleAnimations()
     {
-        // x축으로 이동중이면 isMoving 은 true
-        bool isMoving = rb.linearVelocity.x != 0;
-
+        anim.SetFloat("xVelocity", rb.linearVelocity.x);
+        anim.SetFloat("yVelocity", rb.linearVelocity.y);
         // 함수 원형 : public void SetBool(string name, bool value)
-        anim.SetBool("isMoving", isMoving);
+        anim.SetBool("isGrounded", isGrounded);
     }
 
     private void HandleInput()
@@ -59,12 +55,13 @@ public class Player : MonoBehaviour
 
     private void Jump()
     {
-        if(isGrounded)
+        if (isGrounded)
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
     }
 
     private void HandleCollision()
     {
+        // 함수 원형 : public static RaycastHit2D Raycast(Vector2 origin, Vector2 direction, float distance, int layerMask)
         isGrounded = Physics2D.Raycast(transform.position, Vector2.down, groundCheckDistance, whatIsGround);
     }
 
@@ -91,4 +88,9 @@ public class Player : MonoBehaviour
         Gizmos.DrawLine(transform.position, transform.position + new Vector3(0, -groundCheckDistance));
     }
 
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawLine(transform.position, transform.position + new Vector3(0, -groundCheckDistance));
+    }
 }
