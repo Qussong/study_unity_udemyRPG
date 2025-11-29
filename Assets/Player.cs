@@ -5,6 +5,11 @@ public class Player : MonoBehaviour
     private Animator anim;
     private Rigidbody2D rb;
 
+    [Header("Attack details")]
+    [SerializeField] private float attackRadius;
+    [SerializeField] private Transform attackPoint;
+    [SerializeField] private LayerMask whatIsEnemy;
+
     [Header("Movement details")]
     [SerializeField] private float moveSpeed;// = 3.5f;
     [SerializeField] private float jumpForce;// = 8f;
@@ -34,6 +39,22 @@ public class Player : MonoBehaviour
         HandleFlip();
     }
 
+    public void DamageEnemies()
+    {
+        // 설정한 원과 겹치는 모든 것을 감지한다
+        Collider2D[] enemyColliders = Physics2D.OverlapCircleAll(attackPoint.position, attackRadius, whatIsEnemy);
+
+        // 감지된 모든 Enemy 의 데미지 함수를 호출한다.
+        foreach (Collider2D enemy in enemyColliders)
+        {
+            Enemy enemyScript = enemy.GetComponent<Enemy>();
+
+            enemyScript.TakeDamage();
+
+            Debug.Log("I damaged enemy : " + enemyScript.enemyName);
+        }
+    }
+
     public void EnableMovementAndJump(bool enable)
     {
         canMove = enable;
@@ -44,7 +65,6 @@ public class Player : MonoBehaviour
     {
         anim.SetFloat("xVelocity", rb.linearVelocity.x);
         anim.SetFloat("yVelocity", rb.linearVelocity.y);
-        // 함수 원형 : public void SetBool(string name, bool value)
         anim.SetBool("isGrounded", isGrounded);
     }
 
@@ -64,7 +84,6 @@ public class Player : MonoBehaviour
         if (isGrounded)
         {
             anim.SetTrigger("attack");
-            //rb.linearVelocity = new Vector2(0, rb.linearVelocity.y);
         }
     }
 
@@ -85,7 +104,6 @@ public class Player : MonoBehaviour
 
     private void HandleCollision()
     {
-        // 함수 원형 : public static RaycastHit2D Raycast(Vector2 origin, Vector2 direction, float distance, int layerMask)
         isGrounded = Physics2D.Raycast(transform.position, Vector2.down, groundCheckDistance, whatIsGround);
     }
 
@@ -99,7 +117,6 @@ public class Player : MonoBehaviour
             Flip();
     }
 
-    //[ContextMenu("Flip")]
     private void Flip()
     {
         transform.Rotate(0, 180, 0);
@@ -108,13 +125,8 @@ public class Player : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        // 함수 원형 : public static void DrawLine(Vector3 from, Vector3 to)
         Gizmos.DrawLine(transform.position, transform.position + new Vector3(0, -groundCheckDistance));
+        Gizmos.DrawWireSphere(attackPoint.position, attackRadius);
     }
 
-    private void OnDrawGizmosSelected()
-    {
-        Gizmos.color = Color.red;
-        Gizmos.DrawLine(transform.position, transform.position + new Vector3(0, -groundCheckDistance));
-    }
 }
