@@ -1,0 +1,31 @@
+using UnityEngine;
+
+public class Enemy : MonoBehaviour
+{
+    public string enemyName { get; private set; }
+    [SerializeField] protected float moveSpeed;
+
+    private void Update()
+    {
+        //MoveAround();
+
+        if (Input.GetKeyDown(KeyCode.F))
+            Attack();
+    }
+
+    private void MoveAround()
+    {
+        Debug.Log(enemyName + " move at speed " + moveSpeed);
+    }
+
+    protected virtual void Attack()
+    {
+        Debug.Log(enemyName + " attacks!");
+    }
+
+    public void TakeDamage()
+    {
+
+    }
+
+}
